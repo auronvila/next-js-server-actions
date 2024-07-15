@@ -1,9 +1,11 @@
 'use server'
-import {storePost} from "@/lib/posts";
+import {storePost, updatePostLikeStatus} from "@/lib/posts";
 import {redirect} from "next/navigation";
+import {revalidatePath} from "next/cache";
 
 // using the method for server actions.
-export async function createPost(prevState, formData) {
+export
+async function createPost(prevState, formData) {
   "use server";
   const title = formData.get('title');
   const image = formData.get('image');
@@ -35,5 +37,12 @@ export async function createPost(prevState, formData) {
     userId: 1
   });
 
+  // triggering this function because in production nextjs caches aggressively.
+  revalidatePath('/feed', "layout")
   redirect('/feed')
+}
+
+export async function togglePostLikeStatus(postId) {
+  await updatePostLikeStatus(postId, 2)
+  revalidatePath('/', "layout")
 }
